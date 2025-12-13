@@ -50,20 +50,30 @@ def HomeView(page: ft.Page):
         # Al cambiar de tab, ejecutamos la carga maestra
         load_data()
 
+    # 3. Add Task Logic
     def trigger_add(e):
-        if not input_atom.value:
+        raw = input_atom.value or ""
+        task_title = raw.strip()
+
+        # ✅ Validación SOLO cuando intentas agregar (click o Enter)
+        if not task_title:
+            input_atom.set_error("Task cannot be empty.")
+            input_atom.focus()
             return
-        crud.create_task(input_atom.value)
+
+        # ✅ Limpia error si ya es válido
+        input_atom.clear_error()
+
+        # ✅ Mandamos a BD ya sanitizado
+        crud.create_task(task_title)
+
         input_atom.value = ""
-        
-        # Si estamos en Completed y agregamos, nos movemos a Active
-        # (Nota: Visualmente el tab quizás no cambie solo si no usamos el SegmentedButton con trick, 
-        # pero cargaremos los datos de Active)
-        if tabs_atom.selected_index == 1:
-             # Aquí podrías forzar el cambio visual del tab si fuera necesario
-             pass 
-        
+        input_atom.update()
+
+        # Si agregas, recargas
         load_data()
+
+        # Importante: Mantener el foco
         input_atom.focus()
 
     # --- INSTANCIAS DE ATOMOS ---
@@ -79,8 +89,11 @@ def HomeView(page: ft.Page):
         controls=[
             ft.Text("My To-Do List", size=30, weight="bold", color=AppColors.TEXT),
             
-            ft.Row([input_atom, button_atom]),
-            
+            ft.Row(
+                [input_atom, button_atom],
+                vertical_alignment=ft.CrossAxisAlignment.START
+            ),
+
             tabs_atom,
             
             # Aquí va nuestro nuevo componente superpoderoso
