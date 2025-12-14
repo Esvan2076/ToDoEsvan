@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Callable, List, Optional, Set
 
 import flet as ft
 
@@ -12,48 +12,58 @@ class TodoList(ft.Column):
         self,
         on_delete_task: Callable[[int], None],
         on_status_change: Callable[[int, bool], None],
+        on_update_subject: Callable[[int, str], None],
     ):
         super().__init__()
-
         self.on_delete_task = on_delete_task
         self.on_status_change = on_status_change
+        self.on_update_subject = on_update_subject
 
-        # Layout behavior
-        self.expand = True                     # Take all available vertical space
-        self.scroll = ft.ScrollMode.AUTO       # Enable scrolling for long lists
+        self.expand = True
+        self.scroll = ft.ScrollMode.AUTO
+        self.scrollbar = False
 
     def show_loading(self) -> None:
         self.controls.clear()
-
         if self.page:
             self.update()
 
-    def render_tasks(self, tasks: List[Task]) -> None:
-        # Remove previous items
+    def render_tasks(
+        self,
+        tasks: List[Task],
+        pending_ids: Optional[Set[int]] = None,
+        refreshing: bool = False,
+    ) -> None:
+        pending_ids = pending_ids or set()
         self.controls.clear()
 
-        if not tasks:
-            # Empty state
+        if refreshing and not tasks:
             self.controls.append(
                 ft.Container(
-                    content=ft.Text(
-                        "Nothing here!",
-                        color=AppColors.TEXT_MUTED,
-                        italic=True,
-                    ),
+                    content=ft.Text("Loading...", color=AppColors.TEXT_MUTED, italic=True),
+                    alignment=ft.alignment.center,
+                    padding=20,
+                )
+            )
+        elif not tasks:
+            self.controls.append(
+                ft.Container(
+                    content=ft.Text("Nothing here!", color=AppColors.TEXT_MUTED, italic=True),
                     alignment=ft.alignment.center,
                     padding=20,
                 )
             )
         else:
-            # Render each task item
             for task in tasks:
-                item = TaskItem(
-                    task=task,
-                    on_delete=self.on_delete_task,      # expects task_id
-                    on_toggle=self.on_status_change,    # expects (task_id, completed)
+                self.controls.append(
+                    TaskItem(
+                        task=task,
+                        pending=(task.id in pending_ids),
+                        on_delete=self.on_delete_task,
+                        on_toggle=self.on_status_change,
+                        on_update_subject=self.on_update_subject,
+                    )
                 )
-                self.controls.append(item)
 
         if self.page:
             self.update()

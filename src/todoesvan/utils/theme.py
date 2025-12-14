@@ -19,6 +19,9 @@ class AppColors:
     INTENT_DESTRUCTIVE = "#C84B48"
     INTENT_POSITIVE = "#3FBD5E"
 
+    # --- Edit ---
+    EDIT = "#D4B545"
+
 class UISizes:
     # --- Heights / Sizes ---
     INPUT_HEIGHT = 50

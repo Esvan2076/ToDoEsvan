@@ -1,7 +1,7 @@
 import flet as ft
 
 from todoesvan.utils.assets import ASSETS_DIR
-from todoesvan.views.main import main
+from todoesvan.views.app_view import main
 
 
 def run_app() -> None:
