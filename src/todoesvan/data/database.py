@@ -1,6 +1,13 @@
 import os
+
 import psycopg2
 from dotenv import load_dotenv
+
+from todoesvan.utils.logging import get_logger
+
+load_dotenv()
+
+logger = get_logger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -16,6 +23,6 @@ def get_db_connection():
             port=os.getenv("DB_PORT")
         )
         return conn
-    except Exception as e:
-        print(f"DATABASE CONNECTION ERROR: {e}")
+    except Exception:
+        logger.exception("Failed to connect to database")
         return None
